@@ -32,9 +32,8 @@ module "vnet" {
   depends_on = [ module.resource_group ]
   source = "./vnet"
   resource_group_name = module.resource_group.resource_group_name
-  location            = module.resource_group.resource_group_location
-  vnet_name           = "demo-vnet"
-  subnet_name         = "containers-subnet"
+  resource_group_location = module.resource_group.resource_group_location
+
 }
 
 module "identity" {
@@ -77,24 +76,22 @@ module "container" {
   virtual_network_id = module.vnet.vnet_id
   backend_address_pool_id = module.load_balancer.backend_address_pool_id
   backend_address_pool_name = module.load_balancer.backend_address_pool_name
+  acr_server = module.acr.acr_login_server
 
 }
 
+module "gateway" {
 
-# module "application_gateway" {
-#   source = "./app_gateway"
 
-#   name                    = "myAppGateway"
-#   location                = module.resource_group.resource_group_location
-#   resource_group_name     = module.resource_group.resource_group_name
-#   sku_name                = "Standard_v2"
-#   sku_tier                = "Standard_v2"
-#   sku_capacity            = 2
-#   backend_service_fqdn    = "your-backend-service.example.com"  # Update with your actual backend service FQDN
-#   ssl_cert_path           = "path/to/your/certificate.pfx"  # Path to your SSL certificate
-#   ssl_cert_password        = "your_password"  # Password for the PFX file
-#   public_ip_name          = "myPublicIP"
-#   subnet_id = module.vnet.subnet_id
-#   target-group = module.load_balancer.backend_address_pool_id
-  
-# }
+  source = "./gateway"
+  vnet = module.network.vnet_name
+  resource_group_name = module.resource_group.name
+  resource_group_location = module.resource_group.resource_group_location
+  gateway_subnet_id = module.vnet.gateway_subnet_id
+  gateway_ip = module.network.gateway_public_ip
+
+ 
+}
+
+
+

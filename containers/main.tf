@@ -11,6 +11,7 @@ resource "azurerm_container_group" "staging" {
   container {
     name   = "staging-flask-app"
     image  = var.image
+    //image  = "${var.acr_server}/${var.container_image}"  # Full image path
     cpu    = "0.5"
     memory = "1"
 
@@ -77,18 +78,3 @@ resource "azurerm_container_group" "production" {
   
 }
 
-resource "azurerm_lb_backend_address_pool_address" "container-staging" {
-  name                    = "staging-container"
-  backend_address_pool_id = var.backend_address_pool_id
-  virtual_network_id      = var.virtual_network_id
-  ip_address              = azurerm_container_group.staging.ip_address
-
-}
-
-resource "azurerm_lb_backend_address_pool_address" "container-production" {
-  name                    = "production-container"
-  backend_address_pool_id = var.backend_address_pool_id
-  virtual_network_id      = var.virtual_network_id
-  ip_address              = azurerm_container_group.production.ip_address
-
-}

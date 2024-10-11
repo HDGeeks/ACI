@@ -1,12 +1,12 @@
 resource "azurerm_virtual_network" "vnet" {
   name                = var.vnet_name
-  address_space       = ["10.0.0.0/16"]
-  location            = var.location
+  address_space       = ["10.0.0.0/24"]
+  location            = var.resource_group_location
   resource_group_name = var.resource_group_name
 }
 
-resource "azurerm_subnet" "subnet" {
-  name                 = var.subnet_name
+resource "azurerm_subnet" "containers-subnet" {
+  name                 = var.container_subnet
   resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = ["10.0.1.0/24"]
@@ -22,46 +22,31 @@ resource "azurerm_subnet" "subnet" {
   }
 }
 
-resource "azurerm_network_security_group" "nsg" {
-  name                = "myNSG"
-  location            = var.location
+# Second half of the subnet (10.0.0.128 - 10.0.0.255)
+resource "azurerm_subnet" "gateway_subnet" {
+  name                 = "Gateway-Subnet"
+  resource_group_name  = var.resource_group_name
+  virtual_network_name = azurerm_virtual_network.vnet.name
+  address_prefixes     = ["10.0.0.128/25"]  # Second 128 addresses
+}
+
+resource "azurerm_public_ip" "gateway_public_ip" {
+  name                = "gateway_public_ip"
+  location            = var.resource_group_location
   resource_group_name = var.resource_group_name
+  allocation_method   = "Static"
+  domain_name_label   = var.domain_name_label
+  sku = "Standard"
 
-  security_rule {
-    name                       = "Allow-HTTP"
-    priority                   = 100
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "80"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
 
-  security_rule {
-    name                       = "Allow-Container-Ports"
-    priority                   = 110
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "443"  # Your application port
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
 }
 
-resource "azurerm_subnet_network_security_group_association" "sn-nsg-aci" {
-  subnet_id                 = azurerm_subnet.subnet.id
-  network_security_group_id = azurerm_network_security_group.nsg.id
-}
 
 
 resource "azurerm_network_profile" "containergroup_profile" {
   depends_on = [ azurerm_virtual_network.vnet ]
   name                = "acg-profile"
-  location            = var.location
+  location            = var.resource_group_location
   resource_group_name = var.resource_group_name
   
 
@@ -70,10 +55,13 @@ resource "azurerm_network_profile" "containergroup_profile" {
 
     ip_configuration {
       name      = "aciipconfig"
-      subnet_id = azurerm_subnet.subnet.id
+      subnet_id = azurerm_subnet.containers-subnet.id
       
     
       
     }
   }
 }
+
+
+

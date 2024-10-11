@@ -62,4 +62,14 @@ variable "virtual_network_id" {
   type        = string
 }
 
+variable "container_image" {
+  description = "The Docker image to be pulled from ACR."
+  type        = string
+  default     = "awe-app:latest"  # Set your default image here
+}
 
+variable "acr_server" {
+  description = "The login server for the Azure Container Registry."
+  type        = string
+  
+}
