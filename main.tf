@@ -51,15 +51,7 @@ module "acr" {
   identity_principal_id = module.identity.identity_principal_id
 }
 
-module "load_balancer" {
-  source              = "./loadbalancer"
-  location            = module.resource_group.resource_group_location
-  resource_group_name = module.resource_group.resource_group_name
-  prefix              = "demo"
-  subnet_id = module.vnet.subnet_id
 
- 
-}
 
 
 module "container" {
@@ -70,12 +62,10 @@ module "container" {
   container_name        = "my-container"
   acr_login_server      = module.acr.acr_login_server
   identity_id           = module.identity.identity_id
-  subnet_id             = module.vnet.subnet_id
+  subnet_id             = module.vnet.containers_subnet_id
   network_profile_id    = module.vnet.network_profile_id
   tags                  = { environment = "production" }
   virtual_network_id = module.vnet.vnet_id
-  backend_address_pool_id = module.load_balancer.backend_address_pool_id
-  backend_address_pool_name = module.load_balancer.backend_address_pool_name
   acr_server = module.acr.acr_login_server
 
 }
@@ -84,11 +74,11 @@ module "gateway" {
 
 
   source = "./gateway"
-  vnet = module.network.vnet_name
-  resource_group_name = module.resource_group.name
+  vnet = module.vnet.vnet_name
+  resource_group_name = module.resource_group.resource_group_name
   resource_group_location = module.resource_group.resource_group_location
   gateway_subnet_id = module.vnet.gateway_subnet_id
-  gateway_ip = module.network.gateway_public_ip
+  gateway_ip = module.vnet.gateway_public_ip
 
  
 }

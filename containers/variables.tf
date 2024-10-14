@@ -47,15 +47,6 @@ variable "network_profile_id" {
   
 }
 
-variable "backend_address_pool_name" {
-  description = "The name for the backend address pool address."
-  type        = string
-}
-
-variable "backend_address_pool_id" {
-  description = "The ID of the backend address pool."
-  type        = string
-}
 
 variable "virtual_network_id" {
   description = "The ID of the virtual network."
@@ -65,7 +56,7 @@ variable "virtual_network_id" {
 variable "container_image" {
   description = "The Docker image to be pulled from ACR."
   type        = string
-  default     = "awe-app:latest"  # Set your default image here
+  default     = "web-app:latest"  # Set your default image here
 }
 
 variable "acr_server" {
